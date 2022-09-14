@@ -1,0 +1,13 @@
+os, flag, csv
+timer: time, channels, goroutines
+
+part 1: no timer
+    - read questions from csv 
+        - col format: question, answer
+    - stdout: score -> something like "7/12"
+
+part 2: timer
+    - concurrency 
+    - cancel immediately if time runs out
+
+
