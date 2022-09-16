@@ -6,6 +6,11 @@ part 1: no timer
         - col format: question, answer
     - stdout: score -> something like "7/12"
 
+Lessons:
+    1) Convert composite data types (slices, maps, etc) returned from external io sources to
+    named struct types for internal use. This allows easier integration with other formats
+    representing the same information.
+
 part 2: timer
     - concurrency 
     - cancel immediately if time runs out
