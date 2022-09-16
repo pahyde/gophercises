@@ -17,7 +17,7 @@ I was able to learn goroutines, channels, and a bunch of standard library stuff 
 Good project-based learning material is hard to come by. To make the most of the course, I've decided to complete it as a 20 day challenge.
 Specifically, I'll try to complete one gophercise per day for the next 20 days according to the schedule/checklist below.
 
-- [x] Quiz Game
+- [x] [Quiz Game](https://github.com/pahyde/gophercises/tree/master/quiz)  - 9/15/22
 - [ ] URL Shortener
 - [ ] Choose Your Own Adventure
 - [ ] HTML Link Parser
