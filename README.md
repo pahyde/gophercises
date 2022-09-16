@@ -15,7 +15,7 @@ I've been picking up Go and recently discoverd Jon Calhoun's [Gophercises](https
 I was able to learn goroutines, channels, and a bunch of standard library stuff from just the first project for example. 
 ### The plan
 Good project-based learning material is hard to come by. To make the most of the course, I've decided to complete it as a 20 day challenge.
-Specifically, I will be attempting to complete one gophercise per day for the next 20 days according to the schedule/checklist below.
+Specifically, I'll try to complete one gophercise per day for the next 20 days according to the schedule/checklist below.
 
 - [x] Quiz Game
 - [ ] URL Shortener
