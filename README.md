@@ -38,5 +38,5 @@ Specifically, I'll try to complete one gophercise per day for the next 20 days a
 - [ ] Building Images (png & svg)
 - [ ] Building PDFs 
 
-As always it's about the journey and not the destination. This is a pretty ambitious pace but I'm thinking I can make it happen. Either way I'm looking forward to learning a lot from successes and failures!
+As always it's about the journey and not the destination. This is a pretty ambitious pace but I'm thinking I can make it happen. Either way I'm looking forward to learning from successes and failures!
 Check here for updates and feel free to reach out if you're also working through Gophercises!
