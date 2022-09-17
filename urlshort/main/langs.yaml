@@ -1,0 +1,8 @@
+- path: /go
+  url: https://go.dev/doc/
+- path: /rust
+  url: https://www.rust-lang.org/learn
+- path: /typescript
+  url: https://www.typescriptlang.org/docs/
+- path: /haskell
+  url: http://learnyouahaskell.com/ 

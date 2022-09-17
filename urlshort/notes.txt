@@ -1,0 +1,7 @@
+I spent about an after getting basic redirection working trying to figure out fmt.println
+calls weren't appearing in the terminal. 
+
+It turns out that the 301 - permanently moved http status code causes the browser to
+cache the redirect url.. meaning the printlns I was writing weren't being executed at all
+
+For future reference, use http 302 or something else that doesn't cache -> avoid a headache.
