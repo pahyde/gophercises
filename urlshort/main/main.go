@@ -15,12 +15,11 @@ func main() {
 
     // file flag: Allows user to submit addition path-url redirection pairs
     // in either yaml, json, or xml format
-    m := `Input yaml, json, or xml file denoting key-value (path-url)
+    m := `Input yaml, json, or xml file denoting (path-url)
 redirection pairs for url shortener`
-    inputFile := *flag.String("file", "", m)
+    inputFile := flag.String("file", "", m)
     flag.Parse()
 
-    fmt.Println(inputFile)
     // yaml, json, and xml default values
 	yaml := `
 - path: /urlshort
@@ -77,8 +76,8 @@ redirection pairs for url shortener`
 	}
 
     entryPoint := xmlHandler
-    if inputFile != "" {
-        h, err := getHandlerFromFile(inputFile, xmlHandler)
+    if *inputFile != "" {
+        h, err := getHandlerFromFile(*inputFile, xmlHandler)
         if err != nil {
             exit(err)
         }

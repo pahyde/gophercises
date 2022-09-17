@@ -20,27 +20,27 @@ type Answer struct {
 
 func main() {
 
-    filename := *flag.String(
+    filename := flag.String(
         "csv", 
         "problems.csv", 
         "a csv file in the format (question, answer). defaults to problems.csv",
     )
-    seconds := *flag.Int(
+    seconds := flag.Int(
         "time", 
         16,
         "the time limit for the quiz (in seconds). defaults to 16s",
     )
     flag.Parse()
 
-    file, err := os.Open(filename)
+    file, err := os.Open(*filename)
     if err != nil {
-        exit(fmt.Sprintf("Failed to open file: %s!", filename))
+        exit(fmt.Sprintf("Failed to open file: %s!", *filename))
     }
 
     r := csv.NewReader(file)
     lines, err := r.ReadAll()
     if err != nil {
-        exit(fmt.Sprintf("Something went wrong reading %s.", filename))
+        exit(fmt.Sprintf("Something went wrong reading %s.", *filename))
     }
 
     problems, err := parseProblems(lines)
@@ -57,7 +57,7 @@ func main() {
     // start timer
     // note: time.NewTimer might be a better choice here
     go func() {
-        time.Sleep(time.Duration(seconds) * time.Second)
+        time.Sleep(time.Duration(*seconds) * time.Second)
         quitCh <- 0
     }()
 

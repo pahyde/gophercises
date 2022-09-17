@@ -133,6 +133,5 @@ func convertToMapHandler(dat []byte, fallback http.Handler, f fileType) (http.Ha
         return nil, err
     }
     pathMap := buildMap(parsed)
-    log.Println(pathMap)
     return MapHandler(pathMap, fallback), nil
 }
