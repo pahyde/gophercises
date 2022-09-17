@@ -18,7 +18,7 @@ Good project-based learning material is hard to come by. To make the most of the
 Specifically, I'll try to complete one gophercise per day for the next 20 days according to the schedule/checklist below.
 
 - [x] [Quiz Game](https://github.com/pahyde/gophercises/tree/master/quiz)  - 9/15/22
-- [ ] URL Shortener
+- [x] [URL Shortener](https://github.com/pahyde/gophercises/tree/master/urlshort)  - 9/16/22
 - [ ] Choose Your Own Adventure
 - [ ] HTML Link Parser
 - [ ] Sitemap Builder
