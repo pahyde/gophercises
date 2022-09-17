@@ -2,7 +2,7 @@
 20 Go programming excercises in 20 days
 
 ### Background
-I've been picking up Go and recently discoverd Jon Calhoun's [Gophercises](https://gophercises.com/). If you're not familiar, it's a free course containing some really interesting programming excercises along with solutions in the Go programming language. The projects are nontrivial (at least to a new gopher) and motivate concepts like
+I've been picking up Go and recently discoverd Jon Calhoun's [Gophercises](https://gophercises.com/). If you're not familiar, it's a free course containing some really interesting programming excercises along with solutions in the Go programming language. The projects are nontrivial and get right into concepts like
 
 - Channels
 - Mutexes
