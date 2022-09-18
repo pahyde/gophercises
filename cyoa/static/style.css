@@ -1,0 +1,72 @@
+html {
+    box-sizing: border-box;
+}
+
+* {
+    box-sizing: inherit;
+}
+
+body {
+    background-color: rgb(23, 154, 187);
+    padding: 10px 0px;
+    font-family: sans-serif;
+}
+
+.arc {
+    margin: 0px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    width: 500px;
+    padding: 50px;
+}
+
+@media only screen and (max-width: 500px) {
+  .arc {
+      top: 0;
+      left: 0;
+      border-radius: 0px;
+      width: 90%;
+      transform: none;
+  }
+}
+
+.title {
+    display: block;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.paragraphs {
+    font-size: 15px;
+}
+
+.paragraph {
+    text-indent: 20px;
+}
+
+.the-end {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin: auto;
+}
+
+.options {
+    border-top: solid 1px;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.option {
+    margin-bottom: 10px;
+}
+
+.option a {
+    font-size: 15px;
+    text-decoration: none;
+    color: rgb(23, 154, 187);
+}
+
