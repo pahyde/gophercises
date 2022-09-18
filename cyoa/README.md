@@ -1,7 +1,12 @@
 # Exercise #3: Choose your own adventure
 
-[![exercise status: released](https://img.shields.io/badge/exercise%20status-released-green.svg?style=for-the-badge)](https://gophercises.com/exercises/cyoa) [![demo: ->](https://img.shields.io/badge/demo-%E2%86%92-blue.svg?style=for-the-badge)](https://gophercises.com/demos/cyoa/)
+[![exercise status: released](https://img.shields.io/badge/exercise%20status-released-green.svg?style=for-the-badge)](https://gophercises.com/exercises/cyoa) 
 
+## TODO
+
+- [ ] Style with css
+- [ ] Break into separate cyoa package and main package. The cyoa package should handle http, routing, json/html parsing, and provide
+a ServeMux to the main package with a nice interface for building custom stories.
 
 ## Exercise details
 
