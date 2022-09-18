@@ -7,6 +7,7 @@ import (
     "encoding/json"
     "net/http"
     "flag"
+    "html/template"
 )
 
 type Arc struct {
@@ -48,12 +49,11 @@ func NewStory(b []byte) (map[string]Arc, error) {
     return story, nil
 }
 
-func NewStoryMux(story map[string]Arc) *http.ServeMux {
+func NewStoryMux(story map[string]Arc) http.Handler {
     mux := http.NewServeMux()
     // root arc handler
     // responds with error message if exact path != "/"
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Println(r.URL.Path == "/")
         if r.URL.Path == "/" {
             arcHandler("intro", story).ServeHTTP(w, r)
             return
@@ -70,12 +70,16 @@ func NewStoryMux(story map[string]Arc) *http.ServeMux {
     return mux
 }
 
+
 func arcHandler(arcstr string, story map[string]Arc) http.HandlerFunc {
     arc := story[arcstr]
     return func(w http.ResponseWriter, r *http.Request) {
         // template logic
-        fmt.Println(arc)
-        fmt.Fprintln(w, arcstr)
+        tmpl, err := template.ParseFiles("tmpl.html")
+        if err != nil {
+            exit(err)
+        }
+        tmpl.Execute(w, arc)
         return
     }
 }
