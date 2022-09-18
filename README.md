@@ -19,7 +19,7 @@ Specifically, I'll try to complete one gophercise per day for the next 20 days a
 
 - [x] [Quiz Game](https://github.com/pahyde/gophercises/tree/master/quiz)  - 9/15/22
 - [x] [URL Shortener](https://github.com/pahyde/gophercises/tree/master/urlshort)  - 9/16/22
-- [ ] Choose Your Own Adventure
+- [x] Choose Your Own Adventure
 - [ ] HTML Link Parser
 - [ ] Sitemap Builder
 - [ ] Hacker Rank Problem
