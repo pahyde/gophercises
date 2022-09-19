@@ -7,7 +7,8 @@
 - [x] Style with css
 - [x] Break into separate cyoa package and main package. The cyoa package should handle http, routing, json/html parsing, and provide
 a ServeMux to the main package with a nice interface for building custom stories.
-- [ ] Add some emojis because why not
+- [ ] custom templates with functional options
+- [ ] custom paths with functional options
 
 ## Exercise details
 
