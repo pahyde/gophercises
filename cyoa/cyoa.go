@@ -140,8 +140,11 @@ func JsonStory(f *os.File) (Story, error) {
     return story, nil
 }
 
-type ArcToPathFn  func(arc  string) string
-type PathToArcFn  func(path string) string
+// provided by default or given by user as HandlerOption 
+type ArcToPathFn  func(arc  string) string 
+// generated automatically as inverse of ArcToPathFn
+type PathToArcFn  func(path string) string 
+
 type handler struct {
     story    Story
     t        *template.Template
