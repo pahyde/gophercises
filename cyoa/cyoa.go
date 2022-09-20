@@ -1,74 +1,15 @@
 package cyoa
 
 import (
-    "fmt"
+    "errors"
+    "os"
     "encoding/json"
     "net/http"
     "html/template"
 )
 
-type Arc struct {
-    Title    string
-    Story    []string
-    Options  []Option
-    IsEnd    bool
-}
 
-type Option struct {
-    Text  string
-    Arc   string
-}
-
-func NewStory(b []byte) (map[string]Arc, error) {
-    var story map[string]Arc
-    if err := json.Unmarshal(b, &story); err != nil {
-        return nil, err
-    }
-    for arcstr, arc := range story {
-        if len(arc.Options) == 0 {
-            arc.IsEnd = true
-            story[arcstr] = arc
-            break
-        }
-    }
-    return story, nil
-}
-
-func NewStoryMux(story map[string]Arc) http.Handler {
-    mux := http.NewServeMux()
-    // serve static assets from static dir (e.g. /static/style.css)
-    //staticServer := http.StripPrefix("/static/", http.FileServer(http.Dir("./static")))
-    //mux.Handle("/static/", staticServer) 
-    // root arc handler
-    // responds with error message if exact path != "/"
-    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        if r.URL.Path == "/" {
-            arcHandler("intro", story).ServeHTTP(w, r)
-            return
-        }
-        fmt.Fprintln(w, "Story arc not found!")
-    })
-    // descendent arc handlers
-    mux.Handle("/home", arcHandler("home", story))
-    mux.Handle("/new-york", arcHandler("new-york", story))
-    mux.Handle("/denver", arcHandler("denver", story))
-    mux.Handle("/debate", arcHandler("debate", story))
-    mux.Handle("/sean-kelly", arcHandler("sean-kelly", story))
-    mux.Handle("/mark-bates", arcHandler("mark-bates", story))
-    return mux
-}
-
-func arcHandler(arcstr string, story map[string]Arc) http.HandlerFunc {
-    arc := story[arcstr]
-    return func(w http.ResponseWriter, r *http.Request) {
-        // template logic
-        t := template.Must(template.New("cyoa").Parse(tmpl))
-        t.Execute(w, arc)
-        return
-    }
-}
-
-var tmpl string = `
+var tmplStr string = `
 <!DOCTYPE html>
 <html>
     <head>
@@ -159,19 +100,144 @@ var tmpl string = `
                     </p>
                 {{end}}
             </div>
-            {{if .IsEnd}}
+            {{if .Options}}
+                <div class="options">
+                    {{range .Options}}
+                        <div class="option">
+                            <a href="{{atop .Arc}}">
+                                > {{.Text}}
+                            </a>
+                        </div>
+                    {{end}}
+                </div>
+            {{else}}
                 <span class="the-end">The End</span>
             {{end}}
-            <div class="options">
-                {{range .Options}}
-                    <div class="option">
-                        <a href="/{{.Arc}}">
-                            > {{.Text}}
-                        </a>
-                    </div>
-                {{end}}
-            </div>
         </div>
     </body>
 </html>
 `
+
+type Story map[string]Arc
+
+type Arc struct {
+    Title    string
+    Story    []string
+    Options  []Option
+}
+
+type Option struct {
+    Text  string
+    Arc   string
+}
+
+func JsonStory(f *os.File) (Story, error) {
+    var story Story
+    d := json.NewDecoder(f)
+    if err := d.Decode(&story); err != nil {
+        return nil, err
+    }
+    return story, nil
+}
+
+type ArcToPathFn  func(arc  string) string
+type PathToArcFn  func(path string) string
+type handler struct {
+    story    Story
+    t        *template.Template
+    atop     ArcToPathFn            // arc  -> path
+    ptoa     PathToArcFn            // path -> arc
+}
+
+type HandlerOption func(h *handler) error
+
+func WithTemplate(t *template.Template) HandlerOption {
+    return func(h *handler) error {
+        h.t = t
+        return nil
+    }
+}
+
+func WithArcToPathFn(f ArcToPathFn) HandlerOption {
+    return func(h *handler) error {
+        fInv, err := invert(f, h.story)
+        if err != nil {
+            return err
+        }
+        h.atop = f
+        h.ptoa = fInv
+        return nil
+    }
+}
+
+// construct PathToArcFn from ArcToPathFn. Error if provided fn is not one-to-one
+func invert(f ArcToPathFn, s Story) (PathToArcFn, error) {
+    ptoaMap := make(map[string]string)
+    for arc, _ := range s {
+        path := f(arc)
+        ptoaMap[path] = arc
+    }
+    if len(ptoaMap) < len(s) {
+        return nil, errors.New("Provided ArcToPath fn is not one-to-one. One or more arcs map to the same path.")
+    }
+    fInv := func(path string) string {
+        return ptoaMap[path]
+    }
+    return fInv, nil
+}
+
+// NewStoryHandler: 
+// accepts handler options for arcToPath function and template
+// arcToPath must be injective (one-to-one)
+func NewStoryHandler(s Story, opts ...HandlerOption) (http.Handler, error) {
+    h := defaultStoryHandler(s)
+    for _, o := range opts {
+        // update h with option
+        if err := o(&h); err != nil {
+            return nil, err
+        }
+    }
+    if h.t == nil {
+        // optional template not provided
+        // generate new template from ArcToPathFn h.atop
+        // h.atop maps arc options back to vaild href paths in template
+        h.t = DefaultTemplate(h.atop)
+    }
+    return h, nil
+}
+
+func defaultStoryHandler(s Story) handler {
+    var atop ArcToPathFn = func(arc string) string {
+        if arc == "intro" {
+            return "/"
+        }
+        return "/" + arc
+    }
+    ptoa := must(invert(atop, s))
+    return handler{s, nil, atop, ptoa}
+}
+
+func DefaultTemplate(atop ArcToPathFn) *template.Template {
+    fmap := template.FuncMap{"atop": atop}
+    return template.Must(template.New("cyoa").Funcs(fmap).Parse(tmplStr)) 
+}
+
+
+func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    path := r.URL.Path
+    if arc, ok:= h.story[h.ptoa(path)]; ok {
+        if err := h.t.Execute(w, arc); err != nil {
+            http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+        }
+        return
+    }
+    http.Error(w, "Story arc not found.", http.StatusNotFound)
+}
+
+func must(fInv PathToArcFn, err error) PathToArcFn {
+    if err != nil {
+        panic(err)
+    }
+    return fInv
+}
+
