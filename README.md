@@ -21,7 +21,7 @@ Specifically, I'll try to complete one gophercise per day for the next 20 days a
 - [x] [URL Shortener](https://github.com/pahyde/gophercises/tree/master/urlshort)  - 9/16/22
 - [x] [Choose Your Own Adventure](https://github.com/pahyde/gophercises/tree/master/cyoa) - 9/17/22
 - [x] [HTML Link Parser](https://github.com/pahyde/gophercises/tree/master/link) - 9/18/22
-- [ ] Sitemap Builder
+- [x] [Sitemap Builder](https://github.com/pahyde/gophercises/tree/master/sitemap) - 9/21/22
 - [ ] Hacker Rank Problem
 - [ ] CLI Task Manager
 - [ ] Phone Number Normalizer
