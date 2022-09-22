@@ -1,0 +1,3 @@
+Unix time (also called epoch, posix time) is the number of 
+seconds (excluding leap seconds) since 00:00:00 UTC Jan 1970.
+    - UTC is just a standardized time measure (independent of location) 
