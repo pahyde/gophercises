@@ -1,28 +1,30 @@
 package cmd
 
 import (
+    "fmt"
     "log"
     "strings"
-    "github.com/boltdb/bolt"
     "github.com/spf13/cobra"
+
+    "task/tasklist"
 )
 
 var addCmd = &cobra.Command{
   Use:   "add",
   Short: "task is a CLI for managing your daily TODOs.",
   Run: func(cmd *cobra.Command, args []string) {
-      db, err := bolt.Open("tasks.db", 0600, nil)
+      l, err := tasklist.Open()
       if err != nil {
           log.Fatal(err)
       }
-      defer db.Close()
-      initBuckets(db, "todos", "completed")
-      db.Update(func(tx *bolt.Tx) error {
-          b := tx.Bucket([]byte("todos"))
-          t := time.Now().Format(time.RFC3339)
-          todo := strings.Join(args, " ")
-          b.Put(t, todo)
-      })
+      defer func() {
+          if err := l.Close(); err != nil {
+              log.Fatal(err)
+          }
+      }()
+      taskName := strings.Join(args, " ")
+      l.Add(taskName)
+      fmt.Printf("Added \"%s\" to your task list.\n", taskName)
   },
 }
 
