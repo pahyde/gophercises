@@ -69,7 +69,7 @@ func daysLate(tsk tasklist.Task) (int, error) {
     if t.After(midnight) {
         return 0, nil
     }
-    days := int(midnight.Sub(t).Hours()) / 24
+    days := int(midnight.Sub(t).Hours()) / 24 + 1
     return days, nil
 }
 

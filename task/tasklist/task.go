@@ -2,8 +2,10 @@ package tasklist
 
 import (
     "fmt"
+    "os"
     "time"
     "bytes"
+    "path/filepath"
     "encoding/json"
     "github.com/boltdb/bolt"
 )
@@ -27,7 +29,16 @@ func (tsk Task) TimeDone() (time.Time, error) {
 }
 
 func Open() (*TaskList, error) {
-    db, err := bolt.Open("tasks.db", 0600, nil)
+    configDir, err := os.UserConfigDir()
+    if err != nil {
+        return nil, err
+    }
+    appDir := filepath.Join(configDir, "cli", "task") 
+    if err := os.MkdirAll(appDir, 0750); err != nil {
+        return nil, err
+    }
+    p := filepath.Join(appDir, "tasks.db")
+    db, err := bolt.Open(p, 0600, nil)
     if err != nil {
         return nil, err
     }
