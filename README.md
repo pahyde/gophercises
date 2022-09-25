@@ -24,7 +24,7 @@ Specifically, I'll try to complete one gophercise per day for the next 20 days a
 - [x] [Sitemap Builder](https://github.com/pahyde/gophercises/tree/master/sitemap) - 9/21/22
 - [x] [Hacker Rank Problem](https://github.com/pahyde/gophercises/tree/master/hackerrank) - 9/21/22
 - [x] [CLI Task Manager](https://github.com/pahyde/gophercises/tree/master/task) - 9/22/22
-- [ ] Phone Number Normalizer
+- [x] [Phone Number Normalizer](https://github.com/pahyde/gophercises/tree/master/phone) - 9/25/22
 - [ ] Deck of Cards
 - [ ] Blackjack
 - [ ] Blackjack AI
