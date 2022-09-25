@@ -1,0 +1,13 @@
+Postgresql
+
+useful commands 
+
+sudo -u postgres psql:
+    - run psql as user 'postgres' (default user created by postgresql w/ superadmin access)
+
+service postgresql status:
+    - view postgres db status
+
+pg_config
+    - view dirs, config
+J:
