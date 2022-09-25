@@ -91,7 +91,7 @@ func (l *TaskList) Rm(n int) (Task, error) {
         b := tx.Bucket([]byte("todo"))
         // find and remove tsk #n
         tsk, err := findAndRemove(n, b)
-        if err != nil {
+        if err != nil { 
             return err
         }
         // set return value
