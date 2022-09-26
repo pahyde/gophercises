@@ -36,7 +36,6 @@ func main() {
 
     // Init numbers table to rows in numbers.csv
     db.Exec("DELETE FROM numbers")
-    
     f, err := os.Open("numbers.csv")
     if err != nil {
         log.Fatal(err)
