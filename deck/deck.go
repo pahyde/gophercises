@@ -6,11 +6,11 @@ import (
     "sort"
 )
 
-type CardSuit int
-type CardRank int
+type Suit int
+type Rank int
 
 const (
-    Spades CardSuit = iota 
+    Spades Suit = iota 
     Diamonds
     Clubs
     Hearts
@@ -18,7 +18,7 @@ const (
 )
 
 const (
-    Two CardRank = iota + 2
+    Two Rank = iota + 2
     Three
     Four
     Five
@@ -35,8 +35,41 @@ const (
 )
 
 type Card struct {
-    Suit  CardSuit
-    Rank  CardRank 
+    r Rank
+    s Suit
+}
+
+func NewCard(r Rank, s Suit) (Card, error) {
+    if r < Two || r > JokerRank {
+        return Card{}, fmt.Errorf("undefined Rank %s", r)
+    }
+    if s < Spades || s > JokerSuit {
+        return Card{}, fmt.Errorf("undefined Suit %s", s)
+    }
+    if (r == JokerRank) != (s == JokerSuit) {
+        return Card{}, fmt.Errorf("can't create mixed joker with rank: %s and suit: %s", r, s)
+    }
+    return Card{r, s}, nil
+}
+
+func NewJoker() Card {
+    c, _ := NewCard(JokerRank, JokerSuit)
+    return c
+}
+
+func (c Card) Rank() Rank {
+    return c.r
+}
+
+func (c Card) Suit() Suit {
+    return c.s
+}
+
+func (c Card) String() string {
+    if c.r == JokerRank {
+        return "Joker"
+    }
+    return fmt.Sprintf("%s of %s", c.r, c.s)
 }
 
 type Deck []Card
@@ -150,7 +183,7 @@ func WithJokers(n int) DeckOption {
             return fmt.Errorf("Bad input n: %d. Can't add %d Jokers.", n, n)
         }
         for i := 0; i < n; i++ {
-            d.PutBottom(Card{JokerSuit, JokerRank})
+            d.PutBottom(Card{JokerRank, JokerSuit})
         }
         return nil
     }
@@ -174,7 +207,7 @@ func New(opts ...DeckOption) (Deck, error) {
     d := make(Deck, 0, 52)
     for s := Spades; s <= Hearts; s++ {
         for r := Two; r <= Ace; r++ {
-            d = append(d, Card{s, r})
+            d = append(d, Card{r, s})
         }
     }
     for _, opt := range opts {

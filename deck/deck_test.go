@@ -5,6 +5,42 @@ import (
     "fmt"
 )
 
+func ExampleCards() {
+    ex := []struct{
+        Rank
+        Suit
+    }{
+        {Ace, Spades},
+        {Three, Hearts},
+        {Jack, Clubs},
+        {16, Clubs},
+        {Ten, Diamonds},
+        {JokerRank, JokerSuit},
+        {Two, JokerSuit},
+        {King, Hearts},
+    }
+    for _, c := range ex {
+        card, err := NewCard(c.Rank, c.Suit)
+        if err != nil {
+            fmt.Printf("error creating card with rank: %s, suit: %s\n", c.Rank, c.Suit)
+            continue
+        }
+        fmt.Println(card)
+    }
+    fmt.Println(NewJoker())
+    
+    //Output:
+    //Ace of Spades
+    //Three of Hearts
+    //Jack of Clubs
+    //error creating card with rank: Rank(16), suit: Clubs
+    //Ten of Diamonds
+    //Joker
+    //error creating card with rank: Two, suit: JokerSuit
+    //King of Hearts
+    //Joker
+}
+
 func TestDeckNoOptions(t *testing.T) {
     // create deck
     // it should return nil err 
@@ -27,7 +63,7 @@ func TestDeckNoOptions(t *testing.T) {
             // check if deck contains card
             t.Run(fmt.Sprintf("has %s of %s", r, s), func(t *testing.T) {
                 for _, c := range d {
-                    if c.Suit == s && c.Rank == r {
+                    if c.Suit() == s && c.Rank() == r {
                         return
                     }
                 }
@@ -43,15 +79,15 @@ func TestSort(t *testing.T) {
     d, _ := New()
     type lessfn func(x, y Card) bool
     tests := map[string]lessfn{
-        "sort by rank":          func(x, y Card) bool {return x.Rank < y.Rank},
-        "sort by rank (desc)":   func(x, y Card) bool {return x.Rank > y.Rank},
-        "sort by suit":          func(x, y Card) bool {return x.Suit < y.Suit},
-        "sort by suit (desc)":   func(x, y Card) bool {return x.Suit > y.Suit},
+        "sort by rank":          func(x, y Card) bool {return x.Rank() < y.Rank()},
+        "sort by rank (desc)":   func(x, y Card) bool {return x.Rank() > y.Rank()},
+        "sort by suit":          func(x, y Card) bool {return x.Suit() < y.Suit()},
+        "sort by suit (desc)":   func(x, y Card) bool {return x.Suit() > y.Suit()},
         "sort by rank and suit": func(x, y Card) bool {
-            if x.Suit != y.Suit {
-                return x.Suit < y.Suit
+            if x.Suit() != y.Suit() {
+                return x.Suit() < y.Suit() 
             }
-            return x.Rank < y.Rank
+            return x.Rank() < y.Rank()
         },
     }
 
