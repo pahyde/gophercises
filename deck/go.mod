@@ -1,4 +1,4 @@
-module example.com/deck
+module github.com/pahyde/gophercises/tree/master/deck
 
 go 1.19
 
