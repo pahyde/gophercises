@@ -11,28 +11,28 @@ type Suit int
 type Rank int
 
 const (
-    Spades Suit = iota 
-    Diamonds
-    Clubs
-    Hearts
-    JokerSuit
+    Spades Suit = iota  // ♠
+    Diamonds            // ♦
+    Clubs               // ♣
+    Hearts              // ♥
+    JokerSuit           // JS
 )
 
 const (
-    Two Rank = iota + 2
-    Three
-    Four
-    Five
-    Six
-    Seven
-    Eight
-    Nine
-    Ten
-    Jack
-    Queen
-    King
-    Ace
-    JokerRank
+    Two Rank = iota + 2 // 2
+    Three               // 3
+    Four                // 4
+    Five                // 5
+    Six                 // 6
+    Seven               // 7
+    Eight               // 8
+    Nine                // 9 
+    Ten                 // 10
+    Jack                // J
+    Queen               // Q
+    King                // K
+    Ace                 // A
+    JokerRank           // JR
 )
 
 type Card struct {
@@ -68,9 +68,9 @@ func (c Card) Suit() Suit {
 
 func (c Card) String() string {
     if c.r == JokerRank {
-        return "Joker"
+        return "JKR"
     }
-    return fmt.Sprintf("%s of %s", c.r, c.s)
+    return fmt.Sprintf("%s%s", c.r, c.s)
 }
 
 type Deck []Card

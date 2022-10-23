@@ -3,31 +3,67 @@ package main
 import (
     "fmt"
     "flag"
+    "strings"
     "example.com/blackjack/deck"
 )
 
 type Game struct {
-    Dealer   []deck.Card
-    Players  []Player
-    Deck     deck.Deck
-    Round    int
+    Dealer      Dealer
+    Players     []Player
+    Deck        deck.Deck
+    Round       int
+    CurrPlayer  int
 }
 
-func NewGame(players ...Player) Game {
-    return Game{
-        Dealer:  []deck.Card{},
-        Players: players,
+type Dealer struct {
+    Cards  []deck.Card
+    Chips  int
+}
+
+type Player struct {
+    Type           PlayerType
+    Hands          []Hand //multiple hands for splitting
+    CurrHand       int
+    Chips          int
+}
+
+type PlayerType uint8
+const (
+    User PlayerType = iota
+    AI
+)
+
+type PlayerAction string
+const (
+    Hit PlayerAction = "HIT"
+    Stand            = "STAND"
+    DoubleDown       = "DOUBLEDOWN"
+    Split            = "SPLIT"
+)
+
+type Hand struct {
+    Cards    []deck.Card
+    IsStand  bool
+    Wager    int
+}
+
+func NewGame(players ...Player) *Game {
+    return &Game{
+        Dealer:   Dealer{},
+        Players:  players,
+        Round:    1,
     }
 }
 
 func (g *Game) InitRound() {
     dk, _ := deck.New(deck.WithRandomOrder())
     g.Deck = dk
-    g.Dealer = []deck.Card{}
+    g.Dealer.Cards = []deck.Card{}
     for i := range g.Players {
         g.Players[i].InitHands()
     }
     g.Round++
+    g.CurrPlayer = 0;
 }
 
 func (g *Game) Deal() {
@@ -43,67 +79,52 @@ func (g *Game) Deal() {
         if err != nil {
             panic("this shouldn't happen. deck shouldn't run out of cards")
         }
-        g.Dealer = append(g.Dealer, c)
+        g.Dealer.Cards = append(g.Dealer.Cards, c)
     }
 }
 
-type PlayerAction string
-const (
-    Hit PlayerAction = "Hit"
-    Stand            = "Stand"
-    DoubleDown       = "DoubleDown"
-    Split            = "Split"
-)
-
-func (g *Game) ProcessAction(a PlayerAction, playerid int) string {
-    switch a {
-    case Hit:
-        return g.Hit(playerid)
-    case Stand:
-        return g.Stand(playerid)
-    case DoubleDown:
-        return g.DoubleDown(playerid)
-    case Split:
-        return g.Split(playerid)
+func (g *Game) GetCurrPlayer() *Player {
+    if g.CurrPlayer >= len(g.Players) {
+        return nil
     }
-    return ""
+    return &g.Players[g.CurrPlayer]
 }
 
+func (g *Game) NextPlayer() {
+    g.CurrPlayer++
+}
 
-func (g *Game) Hit(playerid int) string {
-    player := &g.Players[playerid]
-    g.hit(player)
-    if hand.Score() > 21 {
-        player.Currhand++
-        return "BUST!"
+func (g *Game) Hit(p *Player) {
+    hand := p.GetCurrHand()
+    c, err := g.Deck.PullTop()
+    if err != nil {
+        panic(err)
     }
-    return ""
+    hand.Hit(c)
 }
 
-func (g *Game) Stand(playerid int) string {
-    player := &g.Players[playerid]
-    res := fmt.Sprintf("Stand w/ score: %d", player[player.CurrHand].Score())
-    player.CurrHand++
+func (g *Game) Stand(p *Player) {
+    p.GetCurrHand().IsStand = true
 }
 
-func (g *Game) DoubleDown(playerid int) string {
-    player := &g.Players[playerid]
-    g.hit(player)
-    res := fmt.Sprintf("Double Down w/ score: %d", player[player.CurrHand].Score())
-    player.CurrHand++
+func (g *Game) DoubleDown(p *Player) {
+    g.Hit(p)
+    hand := p.GetCurrHand()
+    w := hand.Wager
+    p.Chips    -= w
+    hand.Wager += w
+    g.Stand(p)
 }
 
-func (g *Game) Split(playerid int) string {
-    player := &g.Players[playerid]
-    hands  := player.Hands
-
+func (g *Game) Split(p *Player) {
+    hands  := &p.Hands
     updated := make([]Hand, 0)
     for i, h := range *hands {
-        if i == player.CurrHand {
+        if i == p.CurrHand {
             c0 := []deck.Card{h.Cards[0]}
             c1 := []deck.Card{h.Cards[1]}
-            updated = append(updated, Hand{c0, 0})
-            updated = append(updated, Hand{c1, 0})
+            updated = append(updated, Hand{c0, false, h.Wager})
+            updated = append(updated, Hand{c1, false, h.Wager})
         } else {
             updated = append(updated, h)
         }
@@ -111,36 +132,10 @@ func (g *Game) Split(playerid int) string {
     *hands = updated
 }
 
-func (g *Game) hit(p Player) error {
-    hand := &p.Hands[p.Currhand]
-    c, err := g.Deck.PullTop()
-    if err != nil {
-        return err
-    }
-    hand.Hit(c)
-    return nil
-}
-
-type PlayerType uint8
-const (
-    User PlayerType = iota
-    AI
-)
-
-type Player struct {
-    Type     PlayerType
-    Hands    []Hand //multiple hands for splitting
-    CurrHand int
-    Chips    int
-}
-
-func (p *Player) TurnFinished() bool {
-    return p.CurrHand == len(p.Hands)
-}
-
 func (p *Player) InitHands() {
+    p.CurrHand = 0
     p.Hands = []Hand{
-        Hand{[]deck.Card{}, 0},
+        Hand{[]deck.Card{}, false, 0},
     }
 }
 
@@ -148,13 +143,8 @@ func (p *Player) SetWager(w int) {
     p.Hands[p.CurrHand].Wager = w
 }
 
-func (p *Player) GetCurrHand() Hand {
-    return p.Hands[p.CurrHand]
-}
-
-type Hand struct {
-    Cards  []deck.Card
-    Wager  int
+func (p *Player) GetCurrHand() *Hand {
+    return &p.Hands[p.CurrHand]
 }
 
 func (h *Hand) Hit(c deck.Card) {
@@ -202,67 +192,236 @@ func main() {
 
     user := NewPlayer(User, *chips)
     ai   := NewAi(*n-1)
-    g    := NewGame(append(ai, user)...)
+    game := NewGame(append(ai, user)...)
     
-    for len(g.Players) > 0 {
-        g.InitRound()
-        for i, p := range g.Players {
+    // Game Loop
+    for len(game.Players) > 0 {
+        game.InitRound()
+
+        // Wagers
+        for i, p := range game.Players {
             var w int
             if p.Type == User {
-                w = getUserWager()
+                w = getUserWager(p.Chips)
             } else {
                 w = 10
             }
-            g.Player[i].SetWager(w)
+            game.Players[i].SetWager(w)
         }
-        g.Deal()
-        fmt.Println(g)
 
-        for i := range g.Players {
-            player := &g.Players[i]
+        game.Deal()
 
-            for !player.TurnFinished() {
-                if player.TurnFinished() {
-                    break
-                }
+        // Game Round Loop
+        for {
+            p := game.GetCurrPlayer()
+            if p == nil {
+                break
+            }
 
-                if len(player.GetCurrHand().Cards) == 1 {
-                    // previously split hand
-                    g.hit(player)
-                    if err != nil {
-                        panic(err)
-                    }
-                }
-                // Display game state
-                result := ""
-                if isBlackJack(player.GetCurrHand().Cards) {
-                    player.CurrHand++
-                    result = "BLACKJACK!"
-                } else {
-                    // Hit, Stand, Double Down, Split
-                    action := getPlayerAction(player, g.Dealer)
-                    result = g.ProcessAction(action,i)
-                }
-                fmt.Println(result)
+            // Deal new card if split hand
+            if len(p.GetCurrHand().Cards) == 1 {
+                game.Hit(p)
+            }
+
+            // Display game state
+            displayGame(game)
+            // Display player state
+            displayPlayer(p, game.CurrPlayer)
+
+            // Handle blackjacks
+            if isBlackJack(p.GetCurrHand()) {
+                handleBlackJack(p, game)
+                continue
+            }
+
+            // Hit, Stand, Double Down, Split
+            a := getPlayerAction(p, game)
+            switch a {
+            case Hit:
+                handleHit(p, game)
+            case Stand:
+                handleStand(p, game)
+            case DoubleDown:
+                handleDoubleDown(p, game)
+            case Split:
+                handleSplit(p, game)
             }
         }
     }
 }
 
-func getPlayerAction(p Player, d []deck.Card) {
+func printC(s string, color string) {
+    fmt.Printf(color, s)
+}
+const (
+    green = "\033[38;2;20;190;50m%s\033[0m"
+    white = "\033[38;2;255;255;255m%s\033[0m"
+)
+func displayGame(game *Game) {
+    fmt.Println("Dealer:\n")
+    fmt.Printf("_ %s\n\n", game.Dealer.Cards[1])
+    fmt.Println("Players:\n")
+    for i, p := range game.Players {
+        var color string
+        if i == game.CurrPlayer {
+            color = green
+        } else {
+            color = white
+        }
+        if i == game.CurrPlayer {
+            printC("> ", color)
+        }
+        for _, hand := range p.Hands {
+            for _, card := range hand.Cards {
+                printC(fmt.Sprintf("%s  ", card), color)
+            }
+            printC(fmt.Sprintf("  wager: %d", hand.Wager), color)
+        }
+        if i == game.CurrPlayer {
+            printC(" <", color)
+        }
+        fmt.Println()
+    }
+    fmt.Println()
+}
+
+func displayPlayer(p *Player, pIdx int) {
+    fmt.Printf("Player %d Turn\n\nYour hand:\n\n", pIdx+1)
+    for _, h := range p.Hands {
+        for _, c := range h.Cards {
+            printC(fmt.Sprintf("%s ", c), green)
+        }
+        fmt.Println()
+    }
+}
+
+func isBlackJack(h *Hand) bool {
+    if len(h.Cards) != 2 {
+        return false
+    }
+    c1, c2 := h.Cards[0], h.Cards[1]
+    hasJack := c1.Rank() == deck.Jack || c2.Rank() == deck.Jack
+    return h.Score() == 21 && hasJack
+}
+
+func handleBlackJack(p *Player, game *Game) {
+    fmt.Println("\nBLACKJACK!\n")
+    nextHand(p, game)
+}
+
+func handleHit(p *Player, game *Game) {
+    game.Hit(p)
+    if s := p.GetCurrHand().Score(); s > 21 {
+        fmt.Printf("Hit with score: %d\n", s)
+        fmt.Println("Bust!")
+        nextHand(p, game)
+    }
+}
+
+func handleStand(p *Player, game *Game) {
+    game.Stand(p)
+    nextHand(p, game)
+}
+
+func handleDoubleDown(p *Player, game *Game) {
+    w := p.GetCurrHand().Wager
+    fmt.Printf("Double Down wager: %d -> wager: %d", w, 2*w)
+    game.DoubleDown(p)
+    s := p.GetCurrHand().Score()
+    fmt.Printf("Hit with score: %d\n", s)
+    if s > 21 {
+        fmt.Println("Bust!")
+    }
+    nextHand(p, game)
+}
+
+func handleSplit(p *Player, game *Game) {
+    game.Split(p)
+}
+
+func nextHand(p *Player, game *Game) {
+    p.CurrHand++
+    if p.CurrHand == len(p.Hands) {
+        game.NextPlayer()
+    }
+}
+            /*
+
+                Your Hand:
+
+                > 2H,AS,6C     4D,JH
+                  w: 20
+
+                  2H,AS,6C   > 4D,JH
+                               w: 20
+
+----------------------------------------------------------------------------------
+
+                Your Hand:
+
+                > 2H,AS,6C     4D
+                  w: 20        w: 20
+
+                You have 964 chips available. Current wager: 20.
+
+                Type one of the following: Hit, Stand, Double Down, Split (case insensitive)
+                Enter your action: 
+
+                Hit:
+                    1) score <= 21 -> next action
+                    2) score > 21  -> hit with score(2H, KS, 10D) = 22, -> bust
+                Stand:
+                    -> next hand
+                Double Down:
+                    -> Double down w: 20 -> w: 40 
+                    -> hit with score(2H, ...) == 21
+                    1) score <= 21 -> next hand
+                    2) score > 21  -> bust
+                Split:
+                    -> next hand
+
+                */
+    
+
+func getPlayerAction(p *Player, g *Game) PlayerAction {
     var a PlayerAction
-    switch player.Type {
+    switch p.Type {
     case User:
-        a = getUserAction(p, d)
+        a = getUserAction(p, g)
     case AI:
         //TODO 
         //  getAIAction(p, d)
-        a = getUserAction(p, d)
+        a = getUserAction(p, g)
     }
     return a
 }
 
-func getUserAction(p Player, d []deck.Card) {
+func getUserAction(p *Player, game *Game) PlayerAction {
+    fmt.Println()
+    fmt.Printf("You have %d chips available.\n\n", p.Chips)
+    fmt.Println("Type one of the following: 'Hit', 'Stand', 'Double Down', 'Split' (case insensitive)")
+    var a PlayerAction
+    for {
+        fmt.Printf("Enter player action: ")
+        if _, err := fmt.Scanf("%s", &a); err != nil {
+            fmt.Println(err)
+            continue
+        }
+        a = PlayerAction( strings.ToUpper(string(a)) )
+        if a == Hit || a == Stand || a == DoubleDown || a == Split {
+            break
+        }
+    }
+    fmt.Println()
+    return a
+}
+
+func getUserWager(chips int) int {
+    fmt.Printf("You have %d chips available.\n\n", chips)
+    fmt.Printf("Enter bet amount: ")
+    var w int
+    fmt.Scanf("%d", &w)
+    return w
 }
 
 func NewAi(n int) []Player {
